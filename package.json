@@ -1,0 +1,9 @@
+{
+  "name": "epistassi-the-listening",
+  "version": "3.1.0",
+  "private": true,
+  "description": "EPISTASSI \u2014 The Thirteen Cut 3.1, a branching Po Valley psychological horror game.",
+  "scripts": {
+    "prepare": "node scripts/prepare-site.mjs"
+  }
+}
