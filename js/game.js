@@ -611,13 +611,13 @@ function triggerKillScene() {
     if(event.done)return;event.done=true;controls.unlock();dialogueOpen=true;
     $('speaker').textContent='RECORDING / 03:17';
     $('subtitle').textContent='Dario tilts his head. The cantor stops singing. The bell keeps trembling, though no one touches it. From the tower, a name is spoken — not his.';
-    speakVoice('Dario inclina la testa. The cantor stops singing. La campana continua a vibrare, anche se nessuno la tocca.','REGISTRAZIONE');
+    speakVoice('Dario tilts his head. The cantor stops singing. The bell keeps trembling, though no one touches it.','REGISTRAZIONE');
     $('subtitle-wrap').classList.add('visible');$('dialogue-options').innerHTML='<button class="dialogue-option" id="event-continue"><b>[↵]</b>Do not look again.</button>';
     $('event-continue').onclick=()=>{
       $('subtitle-wrap').classList.remove('visible');dialogueOpen=false;
       stain.material.opacity=.82;victim.object.rotation.x=1.42;victim.object.position.y=-.45;victim.fate='dead';victim.object.visible=true;
       executioner.object.position.set(3.8,0,-3.7);executioner.object.rotation.y=Math.PI;executioner.fate='present';
-      queueCultFate('la navata',executioner,'vanish');scheduleCultSceneFates(1,'la campana','collapse');
+      queueCultFate('the nave',executioner,'vanish');scheduleCultSceneFates(1,'the bell','collapse');
       fear=Math.min(1,fear+.28);glitchPulse=1.2;audio?.killSting();controls.lock();showToast('THE CANTOR HAS BEEN REMOVED FROM THE RECORDING.');
     };
   }};
@@ -641,7 +641,7 @@ function triggerAnnaScene(z, annaMarker) {
         removeQueuedCultist(anna);if(anna.object.parent!==z.group)transferCultist(anna,z,-5.2,1.2);
         anna.object.position.set(-5.2,-.35,1.2);anna.object.rotation.x=1.35;anna.object.visible=true;anna.fate='dead';
         stain.material.opacity=.72;z.group.children.filter(c=>c.isPointLight).forEach(l=>l.intensity*=.22);
-        fear=Math.min(1,fear+.22);glitchPulse=1;audio?.killSting();scheduleCultSceneFates(1,'il posto a tavola','vanish');
+        fear=Math.min(1,fear+.22);glitchPulse=1;audio?.killSting();scheduleCultSceneFates(1,'the place at the table','vanish');
         showToast('THE PLACE AT THE TABLE HAS BEEN TAKEN.');
       }else{
         storyFlags.add('anna-empty-place');stain.material.opacity=.42;audio?.mechanicalEvent('drawer');glitchPulse=1.1;
@@ -1288,7 +1288,7 @@ function inspectTarget(item) {
   if (item.type === 'event') { if(item.used)return;item.used=true;const ix=zone.interactables.indexOf(item);if(ix>=0)zone.interactables.splice(ix,1);item.run?.();return; }
   if (item.type === 'npc') { openDialogue(item); return; }
   if (item.type === 'door') {
-    if (item.locked && collected.size < clueCount) { showToast(`MISSING ${clueCount - collected.size} CLUES. LA PORTA NON RICONOSCE LE TUE MANI.`); audio.stinger(.22); return; }
+    if (item.locked && collected.size < clueCount) { showToast(`${clueCount - collected.size} CLUES REMAIN. THE DOOR DOES NOT RECOGNISE YOUR HANDS.`); audio.stinger(.22); return; }
     enterZone(item.destination, item.spawn); return;
   }
   if (item.type === 'listen') { beginListening(); return; }
@@ -1665,9 +1665,9 @@ function e32Journal(id,title,description,kind='verbale') {
 }
 function e32Toast(text) { showToast(text); audio?.stinger(.32); }
 function e32QuestText() {
-  if (!e32Quest.shovel) return '01 — ABANDONED HOUSE: recupera la vanga sotto il tavolo da lavoro.';
-  if (!e32Quest.grave) return '01 — CIMITERO: scava la tomba di Elena Bassi (1977).';
-  if (!e32Quest.crank) return '02 — CHIESA: trova la manovella dell’organo.';
+  if (!e32Quest.shovel) return '01 — ABANDONED HOUSE: find the spade beneath the workbench.';
+  if (!e32Quest.grave) return '01 — CEMETERY: dig Elena Bassi’s grave (1977).';
+  if (!e32Quest.crank) return '02 — CHURCH: find the missing organ crank.';
   if (!e32Quest.pump) return '02 — CANAL: fit the crank to the pump and stop it.';
   if (!e32Quest.vent) return '03 — CHURCH: open the blocked duct using what you have found.';
   return 'THE THREE PIECES OF EVIDENCE ARE TOGETHER. Return to the farmhouse. No explanation is innocent.';
@@ -1809,7 +1809,7 @@ function e32BuildGraveyard() {
 }
 // Build new connected spaces and mission objects only after the original world exists.
 const e32Graveyard=e32BuildGraveyard();
-const e32GraveDoor=addDoor(zones.road.group,51,19,'il cimitero senza data','graveyard',[0,0,7.1]);
+const e32GraveDoor=addDoor(zones.road.group,51,19,'the undated cemetery','graveyard',[0,0,7.1]);
 e32GraveDoor.prompt='[ E ] ENTER — THE UNDATED CEMETERY';
 addManifesto(zones.road.group,[55,1.8,22],[0,Math.PI/2,0],'QUI RIPOSA\nIL GIORNO','NO DATE OF DEPARTURE');
 e32AddPractical(zones.home,-4.7,1.4,2.4,0xff9b48,.6,5);
@@ -2108,7 +2108,7 @@ $('ending-witness').addEventListener('click',()=>resolveEnding('witness'));
     e32Quest.vent=true;storyFlags.add('vent-open');duct.rotation.z=.32;grille.rotation.y=.9;
     audio?.powerSurge();audio?.mechanicalEvent('valve');fear=Math.max(.2,fear-.16);
     e32Journal('vent-report','Choir ventilation duct','The duct was shut from the inside and then bricked up. The black residue matches the gas heater photographed in 1977. Elena's report was not a forgery.','referto');
-    speakVoice('The room was not cursed. It was sealed. Someone chose to call the gas a voice.','LA CONDOTTA');
+    speakVoice('The room was not cursed. It was sealed. Someone chose to call the gas a voice.','THE DUCT');
     e32Toast('THE DUCT IS OPEN. THE MYTH HAS A CRACK.');e32UpdateQuestHud();
   }});
 }
