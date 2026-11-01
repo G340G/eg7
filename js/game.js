@@ -1056,7 +1056,7 @@ function buildCellar() {
   }
   // A human outline that could be a coat on a hook.
   const hanging = makeNPC(z.group, -7.0, -4.9, 'Il cappotto', 0x141614, 1); hanging.object.scale.set(.72, 1.12, .72); hanging.prompt = '[ E ] EXAMINE — THE COAT';
-  hanging.dialogue = { line: 'The sleeves are still warm. There is no one inside.', choices: ['Who left it here?', 'Do not touch it.'], replies: ['Someone who wears other people's clothes when they are cold.', 'It has already been touched. From the side you cannot see.'] };
+  hanging.dialogue = { line: 'The sleeves are still warm. There is no one inside.', choices: ['Who left it here?', 'Do not touch it.'], replies: ['Someone who wears other people’s clothes when they are cold.', 'It has already been touched. From the side you cannot see.'] };
   addDoor(z.group, 0, 7.95, 'the stairs', 'home', [7.5, 0, -5.2]);
   const turntableEntry = { id: 'listen', type: 'listen', object: disc, point: disc.position, radius: 3.0, prompt: '[ E ] EXAMINE THE WHITE', title: 'Il Bianco' };
   z.interactables.push(turntableEntry);
@@ -1325,7 +1325,7 @@ function resolveEnding(choice) {
   };
   const result={...(choices[choice]||choices.preserve)};
   if(choice==='expose' && storyFlags.has('sergio-truth')) result.copy='Sergio left you the report: carbon monoxide, blocked ventilation, a choir that died without ever hearing the record. You opened the windows. The explanation cannot bring the thirteen back, but it breaks the liturgy.';
-  if(choice==='fill' && storyFlags.has('accepted-leader')) result.copy='You took Dario's place. He was not the leader; he was only the first to empty himself. Your name is engraved on the fourteenth chair, beneath the other thirteen.';
+  if(choice==='fill' && storyFlags.has('accepted-leader')) result.copy='You took Dario’s place. He was not the leader; he was only the first to empty himself. Your name is engraved on the fourteenth chair, beneath the other thirteen.';
   if(choice==='preserve' && storyFlags.has('crossed-impossible')) result.copy='The sewn threshold returned you to the same room, but from the opposite wall. You left the platter turning. When you leave, the door opens inward onto the room you have just left.';
   if(choice==='fill' && storyFlags.has('released')) result.copy += ' You cut the chains but freed no one. The place was filled by a choice you cannot take back.';
   if(choice==='expose' && storyFlags.has('complicit')) result.copy += ' You left the hooks untouched when you could have intervened. The truth arrives, but it is not innocent.';
@@ -1763,7 +1763,7 @@ function e32BuildGraveyard() {
     const cross=new THREE.Mesh(new THREE.BoxGeometry(.07,.48,.055),M.rust);cross.position.set(x,.66,zz+.11);z.group.add(cross);
     const line=new THREE.Mesh(new THREE.BoxGeometry(.32,.018,.025),M.gold);line.position.set(x,.46,zz+.12);z.group.add(line);
   }
-  // Elena's mound, coffin and folded sheet are hidden until the third dig action.
+  // Elena’s mound, coffin and folded sheet are hidden until the third dig action.
   const mound=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),mat(0x292d25,1,{map:TEX.concrete,bumpScale:.18}));
   mound.scale.set(1.85,.38,1.2);mound.position.set(0,.22,-2.5);z.group.add(mound);
   const openedEarth=new THREE.Mesh(new THREE.BoxGeometry(1.95,.06,2.45),mat(0x151713,1,{map:TEX.rust}));openedEarth.position.set(0,.045,-2.5);openedEarth.visible=false;z.group.add(openedEarth);
@@ -1786,7 +1786,7 @@ function e32BuildGraveyard() {
       digEvent.repeatable=false;coffin.visible=true;lid.rotation.x=-.72;lid.position.y=.39;
       const hand=new THREE.Mesh(new THREE.CapsuleGeometry(.07,.55,5,8),mat(0x8a7968,1));hand.position.set(.34,.49,.45);hand.rotation.z=-.82;coffin.add(hand);
       storyFlags.add('grave-proof');e32Quest.grave=true;
-      e32Journal('grave-elena','Elena Bassi's medical file','The report records carbon monoxide asphyxiation. It was folded around a tuning fork: A=415. On the back, in pencil: “the choir never heard anything.”','referto');
+      e32Journal('grave-elena','Elena Bassi’s medical file','The report records carbon monoxide asphyxiation. It was folded around a tuning fork: A=415. On the back, in pencil: “the choir never heard anything.”','referto');
       speakVoice('Elena Bassi. No injuries. No recorded sound. The death was certified before the tape began to turn.','ELENA / 1977');
       e32Toast('THE GRAVE DOES NOT CONTAIN A BODY. IT CONTAINS AN EXPLANATION.');
       zone.interactables.splice(zone.interactables.indexOf(digEvent),1);
@@ -1897,7 +1897,7 @@ chooseDialogue=function(npc,index){
   if(name==='ines'&&index===0){storyFlags.add('ines-trust');e32UpdateQuestHud();}
   if(name==='sergio'&&index===0){
     storyFlags.add('sergio-truth');
-    e32Journal('sergio-confession','Sergio's confession','Sergio says the 1977 choir died because a ventilation duct was blocked. The record came later. “I do not want absolution. I want the report to exist.”','testimonianza');
+    e32Journal('sergio-confession','Sergio’s confession','Sergio says the 1977 choir died because a ventilation duct was blocked. The record came later. “I do not want absolution. I want the report to exist.”','testimonianza');
   }
   if(name==='dario'||name==='il primo'){
     if(index===0){storyFlags.add('challenged-leader');storyFlags.delete('accepted-leader');}
@@ -2023,7 +2023,7 @@ resolveEnding=function(choice){
   if(choice==='witness'){
     storyFlags.add('ending-witness');
     $('ending-title').textContent='The voice that does not fill.';
-    $('ending-copy').textContent='You dug a grave, stopped a pump and opened a duct. Ines entrusted Elena's name to you; Ottavio recognised the sound that precedes a footstep; Sergio allowed the report to exist. You did not hear Il Bianco. You prevented emptiness from being mistaken for a promise.';
+    $('ending-copy').textContent='You dug a grave, stopped a pump and opened a duct. Ines entrusted Elena’s name to you; Ottavio recognised the sound that precedes a footstep; Sergio allowed the report to exist. You did not hear Il Bianco. You prevented emptiness from being mistaken for a promise.';
     $('ending-small').textContent='ENDING IV / WITNESS — THE TAPE REMAINS WHITE';
     $('ending-choices').classList.remove('visible');$('ending-result').classList.add('visible');
     speakVoice('We did not empty ourselves to be filled. We emptied ourselves because no one had listened to our names.','INES / REGISTRAZIONE');
@@ -2043,7 +2043,7 @@ resolveEnding=function(choice){
   }
   if(choice==='fill'&&storyFlags.has('accepted-leader')){
     $('ending-title').textContent='The First Name.';
-    $('ending-copy').textContent='You accepted the First One's account. Now you understand that there was no leader: only an order of people willing to give up their names. The fourteenth chair is not a throne. It is a shift.';
+    $('ending-copy').textContent='You accepted the First One’s account. Now you understand that there was no leader: only an order of people willing to give up their names. The fourteenth chair is not a throne. It is a shift.';
   }
   if(choice==='preserve'&&storyFlags.has('window-witnessed')){
     $('ending-title').textContent='The room behind the glass.';
@@ -2107,7 +2107,7 @@ $('ending-witness').addEventListener('click',()=>resolveEnding('witness'));
     if(e32Quest.vent){e32Toast('AIR PASSES THROUGH. THE SMELL DOES NOT.');return;}
     e32Quest.vent=true;storyFlags.add('vent-open');duct.rotation.z=.32;grille.rotation.y=.9;
     audio?.powerSurge();audio?.mechanicalEvent('valve');fear=Math.max(.2,fear-.16);
-    e32Journal('vent-report','Choir ventilation duct','The duct was shut from the inside and then bricked up. The black residue matches the gas heater photographed in 1977. Elena's report was not a forgery.','referto');
+    e32Journal('vent-report','Choir ventilation duct','The duct was shut from the inside and then bricked up. The black residue matches the gas heater photographed in 1977. Elena’s report was not a forgery.','referto');
     speakVoice('The room was not cursed. It was sealed. Someone chose to call the gas a voice.','THE DUCT');
     e32Toast('THE DUCT IS OPEN. THE MYTH HAS A CRACK.');e32UpdateQuestHud();
   }});
