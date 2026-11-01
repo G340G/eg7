@@ -3066,7 +3066,7 @@ $('objective').querySelector('.micro-label').textContent='YOUR FIRST NIGHT';
 $('mission-panel').querySelector('.mission-heading span').textContent='IL PRIMO’S INSTRUCTIONS';
 $('mission-line').textContent='Find the farmhouse. They have been expecting the piano tuner.';
 $('inspect-hint').textContent='[ Z ] INSPECT / ZOOM &nbsp; · &nbsp; [ X ] RESET VIEW';
-$('subtitle-help').textContent='[1] / [2] CHOOSE · [ESC] CLOSE';
+const subtitleHelp=$('subtitle-help'); if(subtitleHelp) subtitleHelp.textContent='[1] / [2] CHOOSE · [ESC] CLOSE';
 $('journal-button').innerHTML='JOURNAL <b>[TAB]</b>';
 $('journal-close').textContent='CLOSE [TAB]';
 $('torch-state').textContent='ON';
