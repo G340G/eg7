@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -31,8 +31,13 @@
       <div class="progress-track"><div id="progress-fill"></div></div>
       <div class="progress-caption"><span id="evidence-count">0 / 8 TRACCE</span><span id="clock">03:17</span></div>
     </div>
+    <div id="mission-panel" class="mission-panel">
+      <div class="mission-heading"><span>INCARICHI COLLATERALI</span><b id="mission-count">0/3</b></div>
+      <div id="mission-line">01 — CASA VUOTA: recupera la vanga sotto il tavolo da lavoro.</div>
+    </div>
 
     <div class="center-mark" id="center-mark"><span></span><i></i></div>
+    <div id="inspect-hint">[ Z ] OSSERVA / INGRANDISCI &nbsp; · &nbsp; [ X ] RITORNA</div>
     <div class="prompt" id="prompt">[ E ] ESAMINA</div>
 
     <div class="subtitle-wrap" id="subtitle-wrap">
@@ -66,7 +71,7 @@
       <p class="start-copy">A piano tuner has been called to a farmhouse in the Po Valley.<br>Fog has closed the roads. Thirteen people are waiting to be emptied.</p>
       <p class="start-quote">“I can hear when something stops being wrong.”</p>
       <button id="start-button" class="main-button">ENTRA NELLA NEBBIA <span>→</span></button>
-      <div class="controls-note">W A S D — MUOVI SEMPRE &nbsp; / &nbsp; MOUSE — GUARDA (CLICCA E TRASCINA SE NECESSARIO) &nbsp; / &nbsp; E — INTERAGISCI<br>F — TORCIA &nbsp; / &nbsp; SHIFT — CORRI &nbsp; / &nbsp; TAB — TACCUINO &nbsp; / &nbsp; M — AUDIO<br>TIENI PREMUTO Q — TRATTIENI IL FIATO &nbsp; / &nbsp; WASD NON RICHIEDE IL BLOCCO DEL MOUSE &nbsp; / &nbsp; NON FISSARE I TREDICI</div>
+      <div class="controls-note">W A S D — MUOVI SEMPRE &nbsp; / &nbsp; MOUSE — GUARDA (CLICCA E TRASCINA SE NECESSARIO) &nbsp; / &nbsp; E — INTERAGISCI<br>F — TORCIA &nbsp; / &nbsp; SHIFT — CORRI &nbsp; / &nbsp; TAB — TACCUINO &nbsp; / &nbsp; M — AUDIO<br>TIENI PREMUTO Q — TRATTIENI IL FIATO &nbsp; / &nbsp; Z — OSSERVA E INGRANDISCI &nbsp; / &nbsp; X — RIPRISTINA &nbsp; / &nbsp; WASD NON RICHIEDE IL BLOCCO DEL MOUSE</div>
       <div class="start-footer">UN LUOGO FITTIZIO · UN SUONO MAI REGISTRATO · 1977 / 03:17</div>
     </div>
   </section>
@@ -93,6 +98,7 @@
         <button class="ending-choice" id="ending-fill"><b>I</b><span>OFFRI IL TUO NOME</span><small>Lascia che la stanza ti riempia.</small></button>
         <button class="ending-choice" id="ending-expose"><b>II</b><span>APRI LE FINESTRE</span><small>Restituisci aria al luogo.</small></button>
         <button class="ending-choice" id="ending-preserve"><b>III</b><span>NON TOCCARE NULLA</span><small>Conserva la registrazione.</small></button>
+        <button class="ending-choice" id="ending-witness" hidden><b>IV</b><span>RESTITUISCI I NOMI</span><small>Non ascoltare. Testimonia.</small></button>
       </div>
       <div id="ending-result" class="ending-result"><div class="ending-last">EPISTASSI</div><button id="return-button" class="main-button">TORNA ALLA SOGLIA <span>↺</span></button></div>
     </div>

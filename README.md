@@ -1,6 +1,6 @@
-# EPISTASSI — THE LISTENING / THE THIRTEEN CUT
+# EPISTASSI — THE LISTENING / THE BACON DIRECTOR (3.2)
 
-A first-person psychological horror investigation in a fictional stretch of the Po Valley. The central idea is a group of thirteen people who want to empty themselves so that an unheard recording can fill them. The album is never played: the game builds dread from the room, the bodies, the objects and the sounds that remain around it.
+A first-person psychological horror investigation in a fictional stretch of the Po Valley. Start from a rural farmhouse: thirteen people are waiting to empty themselves so that an unheard recording can fill them. The album itself is never played. The game builds its threat from the bodies, the rooms, the industrial objects, the history of a closed choir room and the need to be heard.
 
 ## Run locally
 
@@ -8,42 +8,47 @@ A first-person psychological horror investigation in a fictional stretch of the 
 - Windows: double-click `start-local.bat`.
 - Or run `python3 -m http.server 8765` in this folder and open `http://localhost:8765/`.
 
-Use a current desktop browser with WebGL. Do not open `index.html` as a `file://` document. Three.js 0.160.0 is loaded from a pinned jsDelivr URL, so an Internet connection is required for the engine and for the credited archival portrait photographs. If those photographs fail, procedural 3D faces remain.
+Use a current desktop browser with WebGL. Do not open `index.html` as a `file://` document. Three.js 0.160.0 is loaded from a pinned jsDelivr URL, so an Internet connection is required for the 3D engine and for credited archival portraits. Procedural characters remain as fallback if portrait images cannot load.
 
 ## Controls
 
-- WASD / arrows: move (does not require pointer lock)
-- Mouse: look; when pointer lock is refused, hold left mouse and drag
-- E: interact, speak, examine
-- F: flashlight; Shift: run; Q: hold breath
-- Tab: journal; M: toggle sound
-- 1 / 2 or click: dialogue choices; Esc: close dialogue
+- WASD / arrows: move.
+- Mouse: look; if pointer lock is refused, hold left mouse and drag.
+- E: interact, examine, speak or operate.
+- Z: zoom into the currently targeted object or person; X: return to normal view.
+- F: flashlight; Shift: run; Q: hold breath.
+- Tab: journal; M: toggle sound.
+- 1 / 2 or click: dialogue choices; Esc: close dialogue.
 
-## Narrative systems
+## Story and systems
 
-- **Thirteen cult members** live in the farmhouse. Their fates are driven by discoveries and decisions: some walk away into impossible thresholds, others collapse in front of the player and leave a stain. At the turntable, every remaining member is brought visibly into the cellar and receives a fate before the final choices unlock; no cultist is removed only by a hidden counter.
-- **Il Primo**, the hidden leader, speaks from the slaughterhouse. His dialogue and Dario's earlier words leave his identity uncertain.
-- **The slaughterhouse** is a new traversable location: four suspended, sculptural bovine forms, hoists, rusted rails, chains, damp brick, mould, manifestos and a threshold that returns the player to the same room from the wrong side. The imagery takes broad inspiration from Francis Bacon's distorted bodies and enclosed stage-like spaces, without recreating a specific painting.
-- **The Po Valley** includes maize cultivation, winter wheat, waterlogged rice plots, canals, poplar-like trees, moving branches, wind, rain, lightning, fog and an accelerated day/night cycle.
-- **Eight discoverable documents** lead to the cellar. The new ledger in the slaughterhouse is required; it lists thirteen names against the same time, 03:17.
-- **Three final choices** lead to different endings: surrender your name to the empty place, open the windows and expose the carbon-monoxide explanation behind the 1977 deaths, or preserve the recording and the cult's ambiguity. Prior dialogue and the impossible passage change the wording and meaning of certain endings.
-- **NPC animation** includes articulated arms and legs, slow walking, weight shifts, blinking eyelids and gaze. Faces retain the archival-photo treatment with procedural geometry underneath.
-- **Sound** is entirely generated in Web Audio: wind, room tone, chain and hoist noise, hinges, drawers, clocks, machine bearings, tools, pipes, ratchets, distant knocks and a distinctive cut-air motif at each cultist's death. The forbidden record itself is never played.
-- **Cinematic framing** occasionally pulls away from the player's eyes, hides the view behind foreground geometry and briefly stages the player as an observed figure.
+- **Thirteen cult members** live in the farmhouse. Their fates are attached to discoveries and decisions; the final roll-call stages their visible departure before the endings.
+- **The Fourteenth** is an elongated, cage-framed presence that approaches from behind the player. Looking directly at it makes it withdraw. Its distance drives the drone, pulse and distant footstep layers; the closer it gets, the more urgent the sound becomes.
+- **Francis Bacon–influenced staging**: asymmetrical, elongated bodies; red wire cages; compressed stage-like rooms; hard pools of warm practical light against cold fill; distorted faces and suspended forms. This is an original interpretation of those broad visual qualities, not a recreation of a specific painting.
+- **Practical lighting**: flickering candles and lamps in the farmhouse, church, ruin, slaughterhouse, cellar and cemetery; red and sickly side-light in enclosed scenes.
+- **Windows as scenes**: inspect the farmhouse and ruin windows to witness short, impossible actions happening behind the glass. They add consequences to the preserve ending.
+- **Grave mission**: retrieve the spade in the abandoned house, then dig Elena Bassi's grave in three stages. Her medical file links the 1977 choir deaths to carbon monoxide.
+- **Canal-pump mission**: find the missing organ crank in the church and use it to stop the pump by the canal. The pump log adds another piece of the hydraulic connection.
+- **Ventilation mission**: with both records recovered, open the blocked church duct. The grave report, Sergio's testimony and the open vent together make the factual ending more complete.
+- **Dialogue matters**: Ines's trust, Sergio's confession, Ottavio's listening lesson and the choice to challenge or accept Dario/the Primo change later dialogue and ending text.
+- **Four endings**: three primary choices remain; a fourth witness ending is unlocked only by finishing all three side missions and making the required dialogue choices (Ines trusted, Ottavio's audio lesson accepted, Sergio's truth heard, and the leader challenged).
+- **Sound**: Web Audio generates wind, machine bearings, chains, valves, hinges, mechanical clicks, distorted low drones and proximity footsteps. NPC speech uses browser Italian speech synthesis with slow pitch/rate, radio-like interference, low mechanical layers and a short whispered tail. The exact voice quality depends on installed browser voices.
+- **Inspection**: Z temporarily narrows the camera field of view while a target is active; X resets it. The effect is intended for looking at faces, mechanisms, windows and evidence before interacting.
+- **Weather and time**: the base Po Valley landscape, crops, fog, rain, lightning and accelerated day/night cycle remain active; the cemetery also inherits exterior weather and night ambience.
 
-## Publishing with GitHub Pages
+## GitHub Pages
 
-1. Extract the ZIP and upload all its contents directly into the repository root (`index.html`, `style.css`, `js/`, `.github/`, launchers and scripts).
+1. Keep `index.html` at the repository root.
 2. In Settings → Pages, choose **GitHub Actions** as the source.
-3. Push to `main` or `master`, or run the workflow manually from Actions.
-4. Open the Pages URL after the deployment job succeeds.
+3. Push to `main` or run the Pages workflow from Actions.
+4. Open the Pages URL after deployment succeeds.
 
-The included workflow prepares `_site/` and deploys it. The project does not require a local `node_modules` folder.
+The Pages workflow assembles `_site/` and deploys it. It does not require a local `node_modules` directory.
 
-## Notes and limitations
+## Quality checks
 
-- The photographic face fragments use external archival images credited in `ASSET_CREDITS.md`; they are not scraped indiscriminately from random personal profiles.
-- NPC speech uses the browser's Italian speech synthesis when available; subtitles are always present.
-- All geometric bodies, the carcass room, landscapes, plants, posters and environmental sounds are procedurally created. The bovine figures are surreal sculpture-like forms, not realistic anatomical models.
-- The accelerated day/night cycle completes roughly every 4.5 minutes of active play.
-- No analytics or browser fingerprint collection is included. The browser may show a generic anti-fingerprinting notice because the game uses WebGL and Canvas for ordinary 3D rendering and textures.
+The CI workflow runs `node --check js/game.js`, prepares the Pages folder, and checks that the HTML entrypoint, styles and game module are included. The game uses no analytics or fingerprinting code. A browser's generic anti-fingerprinting notice may still be associated with ordinary Canvas/WebGL rendering.
+
+## Assets and rights
+
+Archival photo fragments are credited in `ASSET_CREDITS.md` and loaded from Wikimedia Commons at runtime. They are used as altered, non-documentary fragments in a fictional game. Source-host availability and image rights labels can change; see the credits file for source pages and caveats.
