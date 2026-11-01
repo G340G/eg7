@@ -773,7 +773,7 @@ function buildRoad() {
   // Doors into interiors.
   addDoor(z.group, 0, -7.0, 'the farmhouse', 'home', [0, 0, 6.2]);
   addDoor(z.group, 37, -17.1, 'the church', 'church', [0, 0, 9.4]);
-  addDoor(z.group, -36, -8.6, 'the farmhouse vuota', 'ruin', [0, 0, 5.8]);
+  addDoor(z.group, -36, -8.6, 'the abandoned house', 'ruin', [0, 0, 5.8]);
   addDoor(z.group, 27, 28.3, 'the house of beasts', 'abattoir', [0,0,7.0]);
   addManifesto(z.group,[-9.5,2.0,-5.8],[0,.12,0],'SVUOTARSI\nPER ESSERE RIEMPITI','AFFISSO DEL CONSORZIO / 1977');
   addManifesto(z.group,[15.5,1.85,14.1],[0,Math.PI,0],'13 + 1 = 0','FOGLIO APPESO DAL LATO SBAGLIATO');
@@ -827,8 +827,8 @@ function buildHome() {
   // A television with no sound, a quiz show frozen on a question.
   addBox(z.group, -1.2, 1.4, -8.2, 2.1, 1.55, .32, M.black);
   const tv = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 1.2), new THREE.MeshBasicMaterial({ map: makeLabelTexture('QUESTION NO. 14', 512, 256), color: 0xb3b1a7 })); tv.position.set(-1.2, 1.42, -8.02); z.group.add(tv);
-  addManifesto(z.group,[-9.78,2.1,-2.6],[0,Math.PI/2,0],'NON ASCOLTARE\nPER CAPIRE','CIRCULAR 14-B');
-  addManifesto(z.group,[.0,3.28,-8.78],[0,0,0],'THE VOID\nÈ UNA PORTA','WRITTEN IN SOOT');
+  addManifesto(z.group,[-9.78,2.1,-2.6],[0,Math.PI/2,0],'DO NOT LISTEN\nTO UNDERSTAND','CIRCULAR 14-B');
+  addManifesto(z.group,[.0,3.28,-8.78],[0,0,0],'THE VOID\nIS A DOOR','WRITTEN IN SOOT');
   // Pictures face the wall, not the room.
   const frame = addBox(z.group, 2.1, 2.25, -8.72, 1.0, .75, .08, M.gold); addBox(z.group, 2.1, 2.25, -8.66, .82, .58, .025, M.darkWall);
   // Characters.
@@ -984,9 +984,9 @@ function buildAbattoir() {
   const overhead=addLight(z.group,0xe1d4b4,1.4,13,0,3.8,1.3);overhead.position.y=3.7;
   for(let i=0;i<6;i++){const chain=new THREE.Mesh(new THREE.CylinderGeometry(.012,.016,.8,6),M.rust);chain.position.set(-8+i*3.2,3.35,3.3);z.group.add(chain);}
   // The room contains manifestos that contradict each other, by design.
-  addManifesto(z.group,[-11.78,2.3,-6.2],[0,Math.PI/2,0],'LA CARNE\nRICORDA','PARETE NORD / 1977');
-  addManifesto(z.group,[11.78,2.1,6.4],[0,-Math.PI/2,0],'NON C’È\nNESSUN DISCO','EAST WALL / 03:17');
-  addManifesto(z.group,[0,3.0,-9.78],[0,0,0],'SVUOTARSI È\nUNA FORMA DI FEDE','MANIFESTO 13');
+  addManifesto(z.group,[-11.78,2.3,-6.2],[0,Math.PI/2,0],'FLESH\nREMEMBERS','PARETE NORD / 1977');
+  addManifesto(z.group,[11.78,2.1,6.4],[0,-Math.PI/2,0],'THERE IS NO\nRECORD','EAST WALL / 03:17');
+  addManifesto(z.group,[0,3.0,-9.78],[0,0,0],'EMPTYING IS\nA FORM OF FAITH','MANIFESTO 13');
   // The cult leader is hidden at the far end; his face is turned away until spoken to.
   const leader=makeNPC(z.group,0,-7.2,'Il Primo',0x171716,1);leader.object.rotation.y=Math.PI;leader.dialogue={line:'I am not the leader. I was the first to understand that the room was not empty. We were taking up too much space.',choices:['Remove the tape.','Give me your place.'],replies:['There is no tape to remove. The machine turns without a reel.','The place is not mine. It is what remains when you give up your name.']};
   const eventMarker=new THREE.Mesh(new THREE.BoxGeometry(.34,.14,.34),M.clue);eventMarker.position.set(0,.12,1.7);z.group.add(eventMarker);
@@ -1046,7 +1046,7 @@ function buildCellar() {
   }
   const tapePath=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-.36,1.48,.47),new THREE.Vector3(-.13,1.33,.5),new THREE.Vector3(.08,1.33,.5),new THREE.Vector3(.36,1.48,.47)]),18,.018,5,false),M.black);reelDeck.add(tapePath);
   for(let i=0;i<5;i++){const knob=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.075,12),M.gold);knob.rotation.x=Math.PI/2;knob.position.set(-.85+i*.42,.76,.43);reelDeck.add(knob);}
-  addManifesto(reelDeck,[0,1.55,-.03],[0,0,0],'NON C’È\nNASTRO','REEL UNIT 14-B / 03:17');
+  addManifesto(reelDeck,[0,1.55,-.03],[0,0,0],'THERE IS NO\nTAPE','REEL UNIT 14-B / 03:17');
   // Thirteen chairs, one turned towards the viewer.
   for (let i = 0; i < 13; i++) {
     const a = i / 13 * Math.PI * 2; const x = Math.cos(a) * 5.0; const zz = Math.sin(a) * 4.1 + .3;
@@ -1277,7 +1277,7 @@ function renderJournal() {
     b.innerHTML = `<small>${String(i + 1).padStart(2, '0')} / ${entry.zone.toUpperCase()}</small><strong>${entry.title}</strong>`;
     b.addEventListener('click', () => {
       list.querySelectorAll('.journal-entry').forEach(x => x.classList.remove('active')); b.classList.add('active');
-      $('journal-detail').innerHTML = `<div class="detail-stamp">EPISTASSI / CLUE ${String(i + 1).padStart(2, '0')}</div><h3>${entry.title}</h3><p>${entry.description}</p><div class="detail-foot">FOUND IN: ${entry.zone.toUpperCase()} · CUSTODITO NEL JOURNAL</div>`;
+      $('journal-detail').innerHTML = `<div class="detail-stamp">EPISTASSI / CLUE ${String(i + 1).padStart(2, '0')}</div><h3>${entry.title}</h3><p>${entry.description}</p><div class="detail-foot">FOUND IN: ${entry.zone.toUpperCase()} · KEPT IN THE JOURNAL</div>`;
     });
     list.appendChild(b);
   });
@@ -1374,7 +1374,7 @@ function updateDayNight(dt,t) {
     const sky=new THREE.Color().lerpColors(nightCol,day,sun);
     if(sun<.24)sky.lerp(dawn,Math.sin((.24-sun)/.24*Math.PI)*.24);
     scene.background.copy(sky);if(scene.fog?.color)scene.fog.color.copy(sky);
-    if(sun<.22&&lastDayAnnouncement!=='NIGHT'){lastDayAnnouncement='NIGHT';showToast('IL GIORNO HA LASCIATO IL CANALE.');}
+    if(sun<.22&&lastDayAnnouncement!=='NIGHT'){lastDayAnnouncement='NIGHT';showToast('THE DAY HAS LEFT THE CANAL.');}
     else if(sun>.72&&lastDayAnnouncement!=='DAWN'){lastDayAnnouncement='DAWN';showToast('THE LIGHT RETURNS WITHOUT THE SUN.');}
   }
   audio?.setDayNight(night);
@@ -1811,7 +1811,7 @@ function e32BuildGraveyard() {
 const e32Graveyard=e32BuildGraveyard();
 const e32GraveDoor=addDoor(zones.road.group,51,19,'il cimitero senza data','graveyard',[0,0,7.1]);
 e32GraveDoor.prompt='[ E ] ENTER — THE UNDATED CEMETERY';
-addManifesto(zones.road.group,[55,1.8,22],[0,Math.PI/2,0],'QUI RIPOSA\nIL GIORNO','NESSUNA DATA DI USCITA');
+addManifesto(zones.road.group,[55,1.8,22],[0,Math.PI/2,0],'QUI RIPOSA\nIL GIORNO','NO DATE OF DEPARTURE');
 e32AddPractical(zones.home,-4.7,1.4,2.4,0xff9b48,.6,5);
 e32AddPractical(zones.home,6.6,1.4,-5.3,0xffae55,.7,6);
 e32AddPractical(zones.church,-2.0,2.2,-11.2,0xff914e,.45,4.7);
@@ -1880,7 +1880,7 @@ function e32UpdateEnemy(dt,t) {
       audio?.mechanicalTone(47,31,.48,'sine',.018+e32.enemyApproach*.035,pan);
     }
   }
-  if(e32.enemyDistance<2.0&&facing<.35)triggerDeath('IL QUATTORDICESIMO HA PRESO IL TUO POSTO.');
+  if(e32.enemyDistance<2.0&&facing<.35)triggerDeath('THE FOURTEENTH HAS TAKEN YOUR PLACE.');
 }
 const e32BaseSetTension=audio.setTension.bind(audio);
 audio.setTension=function(value){
@@ -1905,7 +1905,7 @@ chooseDialogue=function(npc,index){
   }
   if(name==='ottavio'&&index===1){
     storyFlags.add('ottavio-audio');
-    e32Toast('OTTAVIO TI HA INSEGNATO A RICONOSCERE IL RUMORE CHE PRECEDE IL PASSO.');
+    e32Toast('OTTAVIO HAS TAUGHT YOU TO RECOGNISE THE SOUND THAT PRECEDES A FOOTSTEP.');
   }
   if(name==='anna'&&index===0)storyFlags.add('anna-mercy');
   if(name==='the woman by the canal'&&index===0)storyFlags.add('canal-witness');
@@ -1919,7 +1919,7 @@ inspectTarget=function(item){
 const e32BaseEnterZone=enterZone;
 enterZone=function(name,spawn){
   e32BaseEnterZone(name,spawn);
-  if(name==='graveyard'){$('location').textContent='CIMITERO / ELENA BASSI · 1977';fear=Math.min(1,fear+.08);audio?.mechanicalEvent('latch');}
+  if(name==='graveyard'){$('location').textContent='CEMETERY / ELENA BASSI · 1977';fear=Math.min(1,fear+.08);audio?.mechanicalEvent('latch');}
   if(name==='home'&&e32Quest.windowHome)showToast('THE GLASS REFLECTS A ROOM THAT IS NO LONGER HERE.');
   e32UpdateQuestHud();
 };
@@ -2009,7 +2009,7 @@ animateZone=function(t,dt){
   if(e32Enemy.visible){e32Enemy.rotation.z=Math.sin(t*.0011)*.012;}
 };
 const e32BaseHud=updateHud;
-updateHud=function(dt){e32BaseHud(dt);if(currentZone==='graveyard')$('coords').textContent='45° 02′ N — 10° 41′ E / CIMITERO';e32UpdateQuestHud();};
+updateHud=function(dt){e32BaseHud(dt);if(currentZone==='graveyard')$('coords').textContent='45° 02′ N — 10° 41′ E / CEMETERY';e32UpdateQuestHud();};
 const e32BaseFinish=finishListening;
 finishListening=function(){
   e32BaseFinish();
@@ -2032,17 +2032,17 @@ resolveEnding=function(choice){
   e32BaseEnding(choice);
   if(choice==='expose'){
     if(!(e32Quest.grave&&e32Quest.vent&&storyFlags.has('sergio-truth'))){
-      $('ending-title').textContent='La finestra senza aria.';
+      $('ending-title').textContent='The Window Without Air.';
       $('ending-copy').textContent='You opened the windows, but found neither the report nor the way to clear the duct. Cold air filled the room. The explanation remained outside, behind the glass.';
       $('ending-small').textContent='ENDING II / AIR INSUFFICIENTE';
     }else{
       $('ending-title').textContent='The Saturated Room.';
-      $('ending-copy').textContent='Elena's grave, Sergio's confession and the blocked duct point to the same event. Il coro del 1977 morì per monossido di carbonio. The album came later, giving a name to something no one had been able to bear.';
+      $('ending-copy').textContent='Elena’s grave, Sergio’s confession and the blocked duct point to the same event. The 1977 choir died of carbon monoxide poisoning. The album came later, giving a name to something no one could bear.';
       $('ending-small').textContent='ENDING II / EVIDENCE AND VENTILATION';
     }
   }
   if(choice==='fill'&&storyFlags.has('accepted-leader')){
-    $('ending-title').textContent='Il primo nome.';
+    $('ending-title').textContent='The First Name.';
     $('ending-copy').textContent='You accepted the First One's account. Now you understand that there was no leader: only an order of people willing to give up their names. The fourteenth chair is not a throne. It is a shift.';
   }
   if(choice==='preserve'&&storyFlags.has('window-witnessed')){
@@ -2135,7 +2135,10 @@ const e33 = {
 e32Quest.candles = false;
 e32Quest.car = false;
 const e33QuestText = function(){
-  if(!e33.primoWelcomed) return 'NEW ARRIVAL — Find Il Primo in the slaughterhouse. He will show you what the others expect.';
+  if(!e33.primoWelcomed && currentZone==='road') return 'ARRIVAL — Find the farmhouse. They are expecting the piano tuner.';
+  if(!e33.primoWelcomed && currentZone==='home') return 'THE HOUSE — Meet Ines and Ottavio. The man who called you is waiting in the outbuilding.';
+  if(!e33.primoWelcomed && currentZone==='abattoir') return 'IL PRIMO — Speak to the man beside the suspended forms. He has a task for you.';
+  if(!e33.primoWelcomed) return 'THE NEW ARRIVAL — Find the man who arranged your visit.';
   if(!e32Quest.shovel) return 'IL PRIMO’S FIRST TASK — Find a spade in the abandoned house. Elena’s grave is beyond the fields.';
   if(!e32Quest.grave) return 'THE GRAVE — Dig until you find what Elena left beneath the stone.';
   if(!e33.candlesLit) return 'THE CHURCH — Light the seven candles. Il Primo says the order matters.';
@@ -2151,7 +2154,9 @@ function e33UpdateMission(){
   const line=$('mission-line'), count=$('mission-count');
   if(line)line.textContent=e33QuestText();
   if(count)count.textContent=[e32Quest.grave,e33.candlesLit,e32Quest.pump,e32Quest.vent].filter(Boolean).length+'/4';
-  if(!e33.primoWelcomed)$('objective-text').textContent='You are the newest arrival. Find the farmhouse. They have called you here to tune a harpsichord.';
+  if(!e33.primoWelcomed&&currentZone==='road')$('objective-text').textContent='You are the newest arrival. Find the farmhouse. They have called you here to tune a harpsichord.';
+  else if(!e33.primoWelcomed&&currentZone==='home')$('objective-text').textContent='The welcome is almost too ordinary. Meet Ines and Ottavio, then look for the outbuilding beyond the fields.';
+  else if(!e33.primoWelcomed&&currentZone==='abattoir')$('objective-text').textContent='A man is waiting in the slaughterhouse. He says he can show you how this place works.';
   else if(!e32Quest.grave)$('objective-text').textContent='Il Primo has given you a simple task. Do not keep him waiting.';
   else if(!e33.candlesLit)$('objective-text').textContent='The candles must be lit before the others gather.';
   else if(!e33.carRideComplete)$('objective-text').textContent='Il Primo has something else to show you. Find his car.';
@@ -2703,6 +2708,7 @@ e33Iron.position.set(.47,.75,.13);e33Iron.rotation.z=.38;e33ForestPrimo.object.a
 function e33StartCarRide(){
   if(e33.carRideStarted||!e33.carInvitation)return;
   e33.carRideStarted=true;e33.carPhase='drive';e33.carTimer=0;e33.escapeElapsed=0;
+  const carIndex=zones.road.interactables.indexOf(e33CarEvent);if(carIndex>=0)zones.road.interactables.splice(carIndex,1);
   e33ForestPrimo.object.visible=false;
   enterZone('forest',[.43,0,9.8]);
   playerAnchor.position.set(.43,0,9.8);
@@ -2908,6 +2914,7 @@ chooseDialogue=function(npc,index){
       e33.primoWelcomed=true;storyFlags.add('primo-welcome');storyFlags.delete('challenged-leader');storyFlags.add('accepted-leader');
       showToast('IL PRIMO HAS GIVEN YOU A TASK. THE OTHERS ARE WAITING.');
     }else{
+      e33.primoWelcomed=true;
       storyFlags.add('primo-questioned');storyFlags.add('challenged-leader');storyFlags.delete('accepted-leader');
       showToast('IL PRIMO DOES NOT ANSWER THE QUESTION. HE SMILES INSTEAD.');
     }
@@ -2941,6 +2948,7 @@ enterZone=function(name,spawn){
 };
 const e33BaseInspect=inspectTarget;
 inspectTarget=function(item){
+  if(item?.id==='e33_car_ride'&&!item.enabled){showToast('IL PRIMO HAS NOT INVITED YOU YET.');return;}
   if(item?.type==='door'&&currentZone==='forest'&&e33.carPhase==='escape'&&item.destination==='road'){
     e33.carPhase='escaped';e33.carRideComplete=true;e32Quest.car=true;
     storyFlags.add('escaped-primo');
