@@ -838,7 +838,7 @@ function buildHome() {
   anna.object.position.set(-5.2,0,1.2); anna.point=anna.object.position;
   const dario=addCultist(z,-8.0,-6.1,'Dario',0x302d28,1,'The record is not an object. It is the name that remains after every other name has been taken away.', ['Who leads the rite?','What happens to the one who listens?'], ['There is no leader. Only someone who has already made room.','Nothing happens. That is what frightens them.']);dario.isLeader=true;
   const sergio=addCultist(z,-.8,-6.5,'Sergio',0x4a443a,0,'I no longer believe in the record. But at home, only my own noise is waiting.', ['Could we leave together?','Then why do you stay?'], ['There is no outside that has stayed the same.','Company is a habit stronger than faith.']);
-  addCultist(z,7.9,-6.2,'Marta',0x51483d,0,'I have forgotten my daughters face. I remember the sound of her footsteps.');
+  addCultist(z,7.9,-6.2,'Marta',0x51483d,0,'I have forgotten my daughter’s face. I remember the sound of her footsteps.');
   addCultist(z,8.05,.4,'Nino',0x3d423d,1,'The water pump has been running for three days. No one connected it to the power.');
   addCultist(z,8.05,6.1,'Livia',0x544b43,0,'The room is empty only from the side of the person looking in.');
   addCultist(z,.2,7.0,'Gabri',0x343a37,1,'I gave my name to the door. The door returned a number.');
