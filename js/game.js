@@ -1518,6 +1518,13 @@ const movementCodes = new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown'
 window.addEventListener('keydown', (e) => {
   if (playerInputEnabled() && movementCodes.has(e.code)) e.preventDefault();
   keys.add(e.code);
+  if(e.code==='KeyZ'&&!e.repeat&&playerInputEnabled()&&activeTarget){
+    e32.zoom=true;$('inspect-hint')?.classList.add('visible');
+    e32Toast('OSSERVAZIONE RAVVICINATA. NON È UN’IMMAGINE FERMA.');
+  }
+  if(e.code==='KeyX'&&!e.repeat){
+    e32.zoom=false;$('inspect-hint')?.classList.remove('visible');
+  }
   if (e.code === 'KeyF' && !e.repeat && playerInputEnabled()) toggleFlashlight();
   if(e.code==='KeyQ' && playerInputEnabled() && !e.repeat){hiddenBreath=true;showToast('TRATTIENI IL FIATO. NON MUOVERTI.');}
   if (e.code === 'KeyM' && !e.repeat) audio.toggle();
@@ -1638,3 +1645,503 @@ window.addEventListener('error', e => { const f = $('fatal'); f.textContent = `E
 window.addEventListener('unhandledrejection', e => { const f = $('fatal'); f.textContent = `ERRORE DI SISTEMA\n${e.reason?.stack || e.reason}`; f.classList.remove('hidden'); });
 updateProgress();
 requestAnimationFrame(loop);
+
+
+// =============================================================================
+// EPISTASSI 3.2 — THE BACON DIRECTOR
+// Additional story missions, a stalking presence, practical light, scene windows,
+// point inspection and consequence-aware endings. Appended to preserve the base
+// Thirteen Cut systems while extending their existing world and story state.
+// =============================================================================
+const e32 = {
+  zoom:false, zoomValue:72, enemyDistance:22, enemyApproach:0, enemyFootClock:0, enemyZone:null, enemyPositioned:false,
+  windowClock:0, windowScene:null, practicals:[], questLast:'', speechToken:0,
+  digStep:0, missionLog:new Set()
+};
+const e32Quest = {
+  shovel:false, grave:false, crank:false, pump:false, vent:false,
+  windowHome:false, windowRuin:false
+};
+function e32Journal(id,title,description,kind='verbale') {
+  if (journal.some(item=>item.id===id)) return;
+  journal.push({id,title,description,kind,zone:currentZone});
+  updateJournalCount();
+}
+function e32Toast(text) { showToast(text); audio?.stinger(.32); }
+function e32QuestText() {
+  if (!e32Quest.shovel) return '01 — CASA VUOTA: recupera la vanga sotto il tavolo da lavoro.';
+  if (!e32Quest.grave) return '01 — CIMITERO: scava la tomba di Elena Bassi (1977).';
+  if (!e32Quest.crank) return '02 — CHIESA: trova la manovella dell’organo.';
+  if (!e32Quest.pump) return '02 — CANALE: monta la manovella sulla pompa e fermala.';
+  if (!e32Quest.vent) return '03 — CHIESA: apri la condotta ostruita, usando ciò che hai trovato.';
+  return 'LE TRE PROVE SONO RIUNITE. Torna alla casa: nessuna spiegazione è innocente.';
+}
+function e32UpdateQuestHud() {
+  const line=$('mission-line'), count=$('mission-count');
+  if (line) line.textContent=e32QuestText();
+  if (count) count.textContent=[e32Quest.grave,e32Quest.pump,e32Quest.vent].filter(Boolean).length+'/3';
+}
+function e32AddPractical(z,x,y,zz,color=0xffa75e,intensity=.85,range=6) {
+  const holder=new THREE.Group();holder.position.set(x,y,zz);z.group.add(holder);
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.24,8),M.darkWood);stem.position.y=-.09;holder.add(stem);
+  const flame=new THREE.Mesh(new THREE.SphereGeometry(.065,9,7),new THREE.MeshBasicMaterial({color:0xffbd70,transparent:true,opacity:.88}));
+  flame.scale.set(.62,1.75,.62);flame.position.y=.075;holder.add(flame);
+  const halo=new THREE.Mesh(new THREE.SphereGeometry(.18,9,7),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.12,depthWrite:false}));
+  halo.position.copy(flame.position);holder.add(halo);
+  const light=new THREE.PointLight(color,intensity,range,1.65);light.position.set(0,.16,0);light.castShadow=false;holder.add(light);
+  e32.practicals.push({light,flame,halo,phase:Math.random()*9,base:intensity});
+  return holder;
+}
+function e32BaconCage(npc,index) {
+  if(!npc?.object||npc.object.userData.e32Caged)return;
+  npc.object.userData.e32Caged=true;
+  const root=npc.object;
+  const head=root.children.find(o=>o.isMesh&&o.geometry?.type==='SphereGeometry');
+  if(head){head.scale.set(.72+(.06*(index%3)),1.48,.76);head.position.x+=(index%2?-.055:.04);head.position.y+=.055;}
+  if(npc.coat){npc.coat.scale.set(1.18+(index%3)*.06,1.12,.78);npc.coat.rotation.z+=(index%2?.09:-.07);}
+  if(npc.leftArm){npc.leftArm.scale.y=1.26;npc.leftArm.position.x-=.055;}
+  if(npc.rightArm){npc.rightArm.scale.y=1.38;npc.rightArm.position.x+=.045;}
+  if(npc.photoFace){npc.photoFace.scale.y*=1.24;npc.photoFace.rotation.z+=(index%2?.07:-.09);}
+  const cage=new THREE.Group();cage.position.set(0,1.15,-.035);root.add(cage);
+  const wire=new THREE.MeshStandardMaterial({color:index%3===0?0x6e2520:0x725d4d,metalness:.48,roughness:.72,transparent:true,opacity:.72});
+  for(let i=0;i<3;i++){
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.37+i*.075,.012,5,32),wire);
+    ring.scale.set(.78,1.85,.72);ring.rotation.y=i*.42-.42;ring.rotation.z=(i-1)*.14;cage.add(ring);
+  }
+  const cross=new THREE.Mesh(new THREE.TorusGeometry(.46,.014,5,32),wire);
+  cross.rotation.x=Math.PI/2;cross.rotation.z=.18;cage.add(cross);
+  for(const x of [-.29,.29]){
+    const bar=new THREE.Mesh(new THREE.CylinderGeometry(.012,.018,.94,5),wire);
+    bar.position.set(x,.05,0);bar.rotation.z=x<0?-.11:.17;cage.add(bar);
+  }
+  npc.baconCage=cage;
+}
+function e32BaconRoom(z,x=0,zz=0) {
+  const frame=new THREE.Group();frame.position.set(x,0,zz);z.group.add(frame);
+  const red=new THREE.MeshStandardMaterial({color:0x60211f,roughness:.78,metalness:.22});
+  for(const side of [-1,1]){
+    const post=new THREE.Mesh(new THREE.BoxGeometry(.13,4.5,.18),red);post.position.set(side*2.1,2.15,0);frame.add(post);
+    const diagonal=new THREE.Mesh(new THREE.BoxGeometry(.09,4.15,.11),red);diagonal.position.set(side*1.05,2.1,.03);diagonal.rotation.z=side*.43;frame.add(diagonal);
+  }
+  const top=new THREE.Mesh(new THREE.BoxGeometry(4.4,.13,.18),red);top.position.set(0,4.37,0);frame.add(top);
+  const ellipse=new THREE.Mesh(new THREE.TorusGeometry(1.35,.026,6,48),red);ellipse.position.set(0,2.28,.12);ellipse.scale.set(.72,1.5,1);frame.add(ellipse);
+  return frame;
+}
+function e32Window(z,id,x,y,zz,rotY=0) {
+  const frame=new THREE.Group();frame.position.set(x,y,zz);frame.rotation.y=rotY;z.group.add(frame);
+  const darkGlass=new THREE.Mesh(new THREE.PlaneGeometry(1.72,1.66),new THREE.MeshBasicMaterial({color:0x090e0f,transparent:true,opacity:.88,side:THREE.DoubleSide}));
+  frame.add(darkGlass);
+  const glassFog=new THREE.Mesh(new THREE.PlaneGeometry(1.58,1.52),new THREE.MeshBasicMaterial({color:0x718080,transparent:true,opacity:.12,side:THREE.DoubleSide,depthWrite:false}));glassFog.position.z=.012;frame.add(glassFog);
+  for(const xx of [-.91,.91]){const post=new THREE.Mesh(new THREE.BoxGeometry(.11,1.85,.13),M.darkWood);post.position.x=xx;frame.add(post);}
+  for(const yy of [-.9,.9]){const rail=new THREE.Mesh(new THREE.BoxGeometry(1.92,.11,.13),M.darkWood);rail.position.y=yy;frame.add(rail);}
+  const apparition=new THREE.Group();apparition.position.set(0,-.68,-.09);frame.add(apparition);
+  const black=new THREE.MeshBasicMaterial({color:0x030303});
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.23,.77,5,8),black);torso.position.y=.7;torso.scale.set(.72,1.28,.55);apparition.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.19,12,9),new THREE.MeshBasicMaterial({color:0x140e0d}));head.scale.set(.55,1.48,.62);head.position.set(.04,1.5,0);apparition.add(head);
+  for(const side of [-1,1]){const limb=new THREE.Mesh(new THREE.CapsuleGeometry(.052,.73,4,7),black);limb.position.set(side*.37,.68,.015);limb.rotation.z=side*.2;apparition.add(limb);}
+  apparition.visible=false;
+  const marker=new THREE.Mesh(new THREE.SphereGeometry(.11,8,6),new THREE.MeshBasicMaterial({color:0x8e3029,transparent:true,opacity:.26}));
+  marker.position.set(x,y-1.1,zz+(rotY===0?.65:0));z.group.add(marker);
+  const event={id:'e32_window_'+id,type:'event',object:marker,point:marker.position,radius:3.3,prompt:'[ E ] GUARDA ATTRAVERSO IL VETRO',run:()=>{
+    if(id==='home')e32Quest.windowHome=true;else e32Quest.windowRuin=true;
+    storyFlags.add('window-witnessed');e32.windowScene={group:apparition,frame,elapsed:0,id};
+    apparition.visible=true;apparition.position.x=-.34;
+    audio?.mechanicalEvent('glass');audio?.mechanicalTone(64,38,2.4,'sawtooth',.065);
+    speakVoice(id==='home'?'Dall’altra parte della finestra, qualcuno apparecchia per tredici persone. Una sedia è rivolta verso il vetro.':'La donna dietro il vetro non si muove. Il suo riflesso, invece, si allontana.',id==='home'?'LA CASA':'LA VEDOVA');
+    fear=Math.min(1,fear+.13);glitchPulse=1.1;e32UpdateQuestHud();
+  }};
+  z.interactables.push(event);
+  return {frame,apparition,event};
+}
+function e32BuildGraveyard() {
+  const z=newZone('graveyard',0x202622,.028,{minX:-11,maxX:11,minZ:-10,maxZ:10},[0,0,7.1]);
+  addBox(z.group,0,-.12,0,22,.24,20,mat(0x343b31,1,{map:TEX.concrete}));
+  // Old brick cemetery wall and a gate which opens inward onto the same field.
+  for(const side of [-1,1])addBox(z.group,side*10.8,1.35,0,.35,2.7,20,M.brick);
+  addBox(z.group,0,1.35,-9.8,22,2.7,.35,M.brick);
+  addBox(z.group,-7,1.35,9.8,8,2.7,.35,M.brick);addBox(z.group,7,1.35,9.8,8,2.7,.35,M.brick);
+  for(let i=0;i<11;i++){
+    const x=-8.5+(i%4)*5.5,zz=-6.4+Math.floor(i/4)*4.8;
+    const stone=new THREE.Mesh(new THREE.BoxGeometry(.72,1.05,.18),mat(i%3===0?0x514d45:0x66665b,1,{map:TEX.concrete}));
+    stone.position.set(x,.53,zz);stone.rotation.z=(Math.random()-.5)*.09;z.group.add(stone);
+    const cross=new THREE.Mesh(new THREE.BoxGeometry(.07,.48,.055),M.rust);cross.position.set(x,.66,zz+.11);z.group.add(cross);
+    const line=new THREE.Mesh(new THREE.BoxGeometry(.32,.018,.025),M.gold);line.position.set(x,.46,zz+.12);z.group.add(line);
+  }
+  // Elena's mound, coffin and folded sheet are hidden until the third dig action.
+  const mound=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),mat(0x292d25,1,{map:TEX.concrete,bumpScale:.18}));
+  mound.scale.set(1.85,.38,1.2);mound.position.set(0,.22,-2.5);z.group.add(mound);
+  const openedEarth=new THREE.Mesh(new THREE.BoxGeometry(1.95,.06,2.45),mat(0x151713,1,{map:TEX.rust}));openedEarth.position.set(0,.045,-2.5);openedEarth.visible=false;z.group.add(openedEarth);
+  const coffin=new THREE.Group();coffin.position.set(0,-.14,-2.5);coffin.visible=false;z.group.add(coffin);
+  addBox(coffin,0,.12,0,1.18,.22,2.08,M.darkWood);
+  const lid=addBox(coffin,0,.28,-.03,1.3,.12,2.18,M.wood);
+  lid.rotation.x=-.08;
+  const foldedSheet=new THREE.Mesh(new THREE.PlaneGeometry(.74,.82),new THREE.MeshStandardMaterial({color:0xb4aa94,roughness:1,transparent:true,opacity:.72,side:THREE.DoubleSide}));
+  foldedSheet.position.set(0,.39,-.08);coffin.add(foldedSheet);
+  const headstone=new THREE.Mesh(new THREE.BoxGeometry(1.65,1.15,.22),M.darkWood);headstone.position.set(0,.58,-4.0);z.group.add(headstone);
+  const graveText=new THREE.Mesh(new THREE.PlaneGeometry(1.36,.6),new THREE.MeshBasicMaterial({map:makeLabelTexture('ELENA BASSI\n1977 / 03:17',512,256),transparent:true}));
+  graveText.position.set(0,.72,-3.875);z.group.add(graveText);
+  const marker=new THREE.Mesh(new THREE.SphereGeometry(.14,10,8),M.gold);marker.position.set(0,.24,-2.5);z.group.add(marker);
+  const digEvent={id:'e32_dig_grave',type:'event',repeatable:true,object:marker,point:marker.position,radius:3.4,prompt:'[ E ] SCAVA — ELENA BASSI',run:()=>{
+    if(!e32Quest.shovel){e32Toast('TI SERVE UNA VANGA. IL TERRENO NON CEDE ALLE MANI.');return;}
+    e32.digStep++;audio?.mechanicalEvent('scrape');audio?.mechanicalNoise(.5,420,1.3,.12,.12);fear=Math.min(1,fear+.045);glitchPulse=Math.max(glitchPulse,.24);
+    if(e32.digStep===1){mound.scale.y=.31;showToast('LA TERRA È PIÙ MORBIDA SOTTO LA SUPERFICIE. (1/3)');}
+    if(e32.digStep===2){mound.scale.set(1.55,.19,1.0);openedEarth.visible=true;showToast('IL LEGNO È ANCORA ASCIUTTO. (2/3)');}
+    if(e32.digStep>=3){
+      digEvent.repeatable=false;coffin.visible=true;lid.rotation.x=-.72;lid.position.y=.39;
+      const hand=new THREE.Mesh(new THREE.CapsuleGeometry(.07,.55,5,8),mat(0x8a7968,1));hand.position.set(.34,.49,.45);hand.rotation.z=-.82;coffin.add(hand);
+      storyFlags.add('grave-proof');e32Quest.grave=true;
+      e32Journal('grave-elena','La cartella di Elena Bassi','La cartella riporta asfissia da monossido di carbonio. Il referto è stato piegato attorno a una forcella d’accordatura: A=415. Sul retro, a matita: «il coro non ha mai ascoltato niente».','referto');
+      speakVoice('Elena Bassi. Nessuna lesione. Nessun suono registrato. La morte è stata certificata prima che il nastro iniziasse a girare.','ELENA / 1977');
+      e32Toast('LA TOMBA NON CONTIENE UN CORPO. CONTIENE UNA SPIEGAZIONE.');
+      zone.interactables.splice(zone.interactables.indexOf(digEvent),1);
+      marker.visible=false;audio?.killSting();glitchPulse=1.25;
+    }
+    e32UpdateQuestHud();
+  }};
+  z.interactables.push(digEvent);
+  e32AddPractical(z,-8,1.8,7.8,0xd08b4d,.95,9);e32AddPractical(z,8,1.8,7.8,0xd08b4d,.95,9);
+  const gate=addDoor(z.group,0,9.45,'il campo','road',[47,0,16]);
+  gate.prompt='[ E ] TORNA AL CAMPO';
+  z.mist=addFog(z.group,22,24,0x899086,142);
+  z.solids.push(
+    {minX:-11,maxX:-10.6,minZ:-10,maxZ:10},{minX:10.6,maxX:11,minZ:-10,maxZ:10},
+    {minX:-11,maxX:11,minZ:-10,maxZ:-9.6},{minX:-11,maxX:-4,minZ:9.6,maxZ:10},
+    {minX:4,maxX:11,minZ:9.6,maxZ:10}
+  );
+  z.graveMound=mound;
+  return z;
+}
+// Build new connected spaces and mission objects only after the original world exists.
+const e32Graveyard=e32BuildGraveyard();
+const e32GraveDoor=addDoor(zones.road.group,51,19,'il cimitero senza data','graveyard',[0,0,7.1]);
+e32GraveDoor.prompt='[ E ] ENTRA — IL CIMITERO SENZA DATA';
+addManifesto(zones.road.group,[55,1.8,22],[0,Math.PI/2,0],'QUI RIPOSA\nIL GIORNO','NESSUNA DATA DI USCITA');
+e32AddPractical(zones.home,-4.7,1.4,2.4,0xff9b48,.6,5);
+e32AddPractical(zones.home,6.6,1.4,-5.3,0xffae55,.7,6);
+e32AddPractical(zones.church,-2.0,2.2,-11.2,0xff914e,.45,4.7);
+e32AddPractical(zones.ruin,3.6,1.3,3.3,0x9eacaa,.55,5);
+e32AddPractical(zones.abattoir,0,3.2,5.6,0xb84332,.65,7);
+e32AddPractical(zones.cellar,-4.5,1.8,3.2,0xff9a45,.55,4.5);
+e32BaconRoom(zones.abattoir,0, -5.9);
+e32BaconRoom(zones.home,0, -5.4);
+const e32HomeWindow=e32Window(zones.home,'home',-.2,1.85,-8.79,0);
+const e32RuinWindow=e32Window(zones.ruin,'ruin',-7.79,1.9,-.8,Math.PI/2);
+// Add asymmetric portrait cages to all thirteen and the principal non-cultist figures.
+[...cultRoster,
+  ...['road','church','ruin','abattoir','cellar'].flatMap(k=>zones[k].interactables.filter(i=>i.type==='npc'))
+].forEach((npc,i)=>e32BaconCage(npc,i));
+// The hidden antagonist: an elongated, caged silhouette that approaches from the
+// space behind the player and withdraws when looked at directly.
+const e32Enemy=new THREE.Group();e32Enemy.name='IL_QUATTORDICESIMO';
+const e32EnemyMat=new THREE.MeshStandardMaterial({color:0x120f0e,roughness:1,metalness:.08});
+const e32EnemyTorso=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.98,7,12),e32EnemyMat);e32EnemyTorso.position.y=1.12;e32EnemyTorso.scale.set(.74,1.56,.72);e32Enemy.add(e32EnemyTorso);
+const e32EnemyHead=new THREE.Mesh(new THREE.SphereGeometry(.24,18,14),new THREE.MeshStandardMaterial({color:0x28201c,roughness:1}));e32EnemyHead.position.set(.04,2.38,0);e32EnemyHead.scale.set(.62,1.72,.66);e32Enemy.add(e32EnemyHead);
+for(const side of [-1,1]){
+  const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.85,5,9),e32EnemyMat);arm.position.set(side*.48,1.26,.02);arm.rotation.z=side*.16;e32Enemy.add(arm);
+  const hand=new THREE.Mesh(new THREE.SphereGeometry(.095,8,6),new THREE.MeshStandardMaterial({color:0x4d332b}));hand.position.set(side*.53,.62,.04);e32Enemy.add(hand);
+  const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.82,5,8),e32EnemyMat);leg.position.set(side*.18,.2,0);e32Enemy.add(leg);
+}
+for(let i=0;i<3;i++){
+  const cage=new THREE.Mesh(new THREE.TorusGeometry(.52+i*.09,.018,5,42),new THREE.MeshStandardMaterial({color:0x7c2c25,metalness:.52,roughness:.7}));
+  cage.position.set(0,1.3+i*.26,-.08);cage.rotation.set(Math.PI/2+(i*.16),i*.32,.18-i*.16);cage.scale.set(.82,1.65,.72);e32Enemy.add(cage);
+}
+const e32EnemyGlow=new THREE.PointLight(0x9f2923,1.25,6,1.8);e32EnemyGlow.position.set(0,2.2,.2);e32Enemy.add(e32EnemyGlow);
+e32Enemy.visible=false;scene.add(e32Enemy);
+function e32UpdateEnemy(dt,t) {
+  if(!gameStarted||gameEnded||listeningPending||!zone){e32Enemy.visible=false;e32.enemyApproach=0;e32.enemyPositioned=false;return;}
+  controls.getDirection(forward);forward.y=0;forward.normalize();
+  const p=currentPosition(),right=new THREE.Vector3(-forward.z,0,forward.x);
+  if(!e32.enemyPositioned||e32.enemyZone!==currentZone){
+    const spawn=p.clone().addScaledVector(forward,-18).addScaledVector(right,2.1);
+    e32Enemy.position.set(spawn.x,0,spawn.z);
+    e32.enemyZone=currentZone;e32.enemyPositioned=true;e32.enemyDistance=spawn.distanceTo(p);
+  }
+  const toPlayer=p.clone().sub(e32Enemy.position);toPlayer.y=0;
+  const dist=toPlayer.length();
+  const toward=toPlayer.lengthSq()>.001?toPlayer.normalize():new THREE.Vector3(0,0,1);
+  const toEnemy=e32Enemy.position.clone().sub(p);toEnemy.y=0;
+  const facing=toEnemy.lengthSq()>.001?forward.dot(toEnemy.normalize()):0;
+  const storyPressure=Math.min(.28,collected.size*.035),fearPressure=fear*.42;
+  const timePressure=Math.min(.22,elapsed/520);
+  const roomPressure=['abattoir','cellar','graveyard'].includes(currentZone) ? .16 : 0;
+  const pressure=THREE.MathUtils.clamp(.10+storyPressure+fearPressure+timePressure+roomPressure,0,.82);
+  if(facing>.72&&dist<19){
+    e32Enemy.position.addScaledVector(toward,-dt*(2.4+pressure*1.8));
+    if(dist<7.5&&Math.random()<dt*.45){glitchPulse=Math.max(glitchPulse,.38);audio?.mechanicalEvent('latch');}
+  }else e32Enemy.position.addScaledVector(toward,dt*(.18+pressure*.68));
+  e32Enemy.lookAt(p.x,0,p.z);
+  e32.enemyDistance=e32Enemy.position.distanceTo(p);
+  e32.enemyApproach=THREE.MathUtils.clamp((19-e32.enemyDistance)/16,0,1);
+  e32Enemy.visible=e32.enemyDistance<18&&facing>-.35;
+  e32EnemyHead.rotation.z=Math.sin(t*.0017)*.065;e32EnemyTorso.rotation.z=Math.sin(t*.0008)*.045;
+  e32EnemyGlow.intensity=.35+e32.enemyApproach*2.5+Math.sin(t*.006)*.18;
+  if(e32.enemyDistance<14){
+    e32.enemyFootClock-=dt;
+    if(e32.enemyFootClock<=0){
+      e32.enemyFootClock=1.55-e32.enemyApproach*.92+Math.random()*.22;
+      const pan=THREE.MathUtils.clamp(right.dot(toEnemy.clone().normalize()),-1,1);
+      audio?.mechanicalNoise(.18,185+Math.random()*90,1.6,.035+e32.enemyApproach*.06,pan);
+      audio?.mechanicalTone(47,31,.48,'sine',.018+e32.enemyApproach*.035,pan);
+    }
+  }
+  if(e32.enemyDistance<2.0&&facing<.35)triggerDeath('IL QUATTORDICESIMO HA PRESO IL TUO POSTO.');
+}
+const e32BaseSetTension=audio.setTension.bind(audio);
+audio.setTension=function(value){
+  e32BaseSetTension(Math.min(1,value+e32.enemyApproach*.58));
+  if(this.zoneGain&&this.ctx)this.zoneGain.gain.setTargetAtTime(.08+value*.15+e32.enemyApproach*.25,this.ctx.currentTime,.34);
+  if(this.noiseGain&&this.ctx)this.noiseGain.gain.setTargetAtTime(.13+value*.07+e32.enemyApproach*.13,this.ctx.currentTime,.5);
+};
+const e32BaseSpeak=speakVoice;
+speakVoice=function(text,npcName=''){
+  if(!text)return;
+  e32.speechToken++;const token=e32.speechToken;
+  if(!('speechSynthesis'in window)){e32BaseSpeak(text,npcName);return;}
+  try{
+    window.speechSynthesis.cancel();
+    const voice=new SpeechSynthesisUtterance(text);voice.lang='it-IT';
+    const isPrimo=/primo|quattordicesimo|registrazione/i.test(npcName||'');
+    voice.rate=isPrimo ? .53 : .67;voice.pitch=isPrimo ? .22 : .39;voice.volume=.68;
+    const italian=window.speechSynthesis.getVoices().filter(v=>/^it([-_]|$)/i.test(v.lang));
+    if(italian.length){const seed=(npcName||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0);voice.voice=italian[Math.abs(seed)%italian.length];}
+    voice.onstart=()=>{audio?.mechanicalNoise(.10,2100,6,.035,0);audio?.mechanicalTone(isPrimo?48:72,isPrimo?31:52,.85,'sawtooth',.022,0);};
+    voice.onend=()=>{
+      audio?.mechanicalNoise(.16,1250,4,.035,(Math.random()-.5)*.8);
+      if(token!==e32.speechToken||!text.trim())return;
+      const words=text.trim().split(/\s+/);if(words.length<5)return;
+      const echoText=words.slice(-3).join(' ');
+      setTimeout(()=>{
+        if(token!==e32.speechToken||dialogueOpen===false&&gameEnded===false&&$('subtitle-wrap').classList.contains('visible')===false)return;
+        const echo=new SpeechSynthesisUtterance(echoText);echo.lang='it-IT';echo.rate=.55;echo.pitch=.18;echo.volume=.16;
+        if(italian.length)echo.voice=italian[0];window.speechSynthesis.speak(echo);
+      },260);
+    };
+    window.speechSynthesis.speak(voice);
+    audio?.mechanicalNoise(.13,1600,5,.032,0);
+  }catch(err){console.warn('Degraded NPC voice unavailable',err);e32BaseSpeak(text,npcName);}
+};
+const e32BaseChooseDialogue=chooseDialogue;
+chooseDialogue=function(npc,index){
+  e32BaseChooseDialogue(npc,index);
+  const name=(npc?.name||'').toLowerCase();
+  storyFlags.add('spoke-'+name.replace(/[^a-z0-9]+/g,'-')+'-'+index);
+  if(name==='ines'&&index===0){storyFlags.add('ines-trust');e32UpdateQuestHud();}
+  if(name==='sergio'&&index===0){
+    storyFlags.add('sergio-truth');
+    e32Journal('sergio-confession','La confessione di Sergio','Sergio sostiene che il coro del 1977 morì per una condotta ostruita. Il disco arrivò dopo. «Non voglio essere assolto. Voglio che il referto esista».','testimonianza');
+  }
+  if(name==='dario'||name==='il primo'){
+    if(index===0){storyFlags.add('challenged-leader');storyFlags.delete('accepted-leader');}
+    else{storyFlags.add('accepted-leader');storyFlags.delete('challenged-leader');}
+  }
+  if(name==='ottavio'&&index===1){
+    storyFlags.add('ottavio-audio');
+    e32Toast('OTTAVIO TI HA INSEGNATO A RICONOSCERE IL RUMORE CHE PRECEDE IL PASSO.');
+  }
+  if(name==='anna'&&index===0)storyFlags.add('anna-mercy');
+  if(name==='la donna al canale'&&index===0)storyFlags.add('canal-witness');
+  e32UpdateQuestHud();
+};
+const e32BaseInspect=inspectTarget;
+inspectTarget=function(item){
+  if(item?.repeatable){item.run?.();return;}
+  e32BaseInspect(item);
+};
+const e32BaseEnterZone=enterZone;
+enterZone=function(name,spawn){
+  e32BaseEnterZone(name,spawn);
+  if(name==='graveyard'){$('location').textContent='CIMITERO / ELENA BASSI · 1977';fear=Math.min(1,fear+.08);audio?.mechanicalEvent('latch');}
+  if(name==='home'&&e32Quest.windowHome)showToast('IL VETRO RIFLETTE UNA STANZA CHE NON È PIÙ QUI.');
+  e32UpdateQuestHud();
+};
+const e32BaseDayNight=updateDayNight;
+updateDayNight=function(dt,t){
+  e32BaseDayNight(dt,t);
+  if(currentZone==='graveyard'){
+    const night=dayNightBlend;
+    const sky=new THREE.Color(0xb0b4a9).lerp(new THREE.Color(0x151d21),night);
+    scene.background.copy(sky);if(scene.fog?.color)scene.fog.color.copy(sky);
+    zones.graveyard.ambient.intensity=.34-night*.2;
+    zones.graveyard.moon.intensity=.3+night*.62;
+  }
+};
+const e32BaseWeather=updateWeather;
+updateWeather=function(dt,t){
+  e32BaseWeather(dt,t);
+  if(currentZone==='graveyard'){
+    rainPoints.visible=true;rainStreaks.visible=true;
+    const p=currentPosition();rainPoints.position.set(p.x,0,p.z);rainStreaks.position.set(p.x,0,p.z);
+  }
+};
+const e32BaseHorror=updateHorror;
+updateHorror=function(dt,t){e32BaseHorror(dt,t);e32UpdateEnemy(dt,t);};
+const e32BaseCamera=updateCameraDirector;
+updateCameraDirector=function(dt,t){
+  e32BaseCamera(dt,t);
+  if(e32.enemyApproach>.76&&!dialogueOpen&&!journalOpen&&!cameraDirector.active&&cameraDirector.cooldown<=0){
+    cameraDirector.active=true;cameraDirector.timer=1.1;cameraDirector.side=Math.random()<.5?-1:1;cameraDirector.phase=0;cameraDirector.roll=.025;
+    showToast('QUALCUNO È ENTRATO NELL’INQUADRATURA.');
+  }
+};
+const e32BaseTargets=updateTargets;
+updateTargets=function(){
+  e32BaseTargets();
+  const hint=$('inspect-hint');
+  if(hint)hint.classList.toggle('visible',!!activeTarget&&playerInputEnabled()&&e32.zoom);
+};
+const e32BasePlayer=updatePlayer;
+updatePlayer=function(dt){
+  e32BasePlayer(dt);
+  const target=e32.zoom?27:72;
+  if(Math.abs(camera.fov-target)>.12){camera.fov+= (target-camera.fov)*Math.min(1,dt*7);camera.updateProjectionMatrix();}
+};
+const e32BaseAnimate=animateZone;
+animateZone=function(t,dt){
+  e32BaseAnimate(t,dt);
+  e32.practicals.forEach(p=>{
+    const f=.82+Math.sin(t*.009+p.phase)*.11+Math.sin(t*.037+p.phase*2)*.045;
+    p.light.intensity=p.base*f;p.flame.scale.y=1.45+f*.4;p.halo.material.opacity=.08+f*.06;
+  });
+  if(e32.windowScene){
+    const w=e32.windowScene;w.elapsed+=dt;w.group.position.x=-.34+Math.min(1,w.elapsed/2.1)*.72;
+    w.group.rotation.z=Math.sin(t*.002)*.035;
+    if(w.elapsed>4.8){w.group.visible=false;e32.windowScene=null;glitchPulse=Math.max(glitchPulse,.55);}
+  }
+  // Cultists never stand quite still: small delayed weight transfers and
+  // shoulder/neck contractions create a slow, badly synchronised walking rhythm.
+  for(const npc of cultRoster){
+    if(npc.fate!=='present'||npc.walking)continue;
+    if(Math.sin(t*.00019+npc.phase*1.7)>.982){
+      npc.walking=true;npc.userDataWalkUntil=t+980;
+      npc.e32ShambleOrigin=npc.object.position.clone();npc.e32ShambleStart=t;
+      npc.e32ShambleSide=(Math.random()-.5)*.18;
+    }
+    if(npc.object?.visible){
+      npc.object.rotation.z+=(Math.sin(t*.00053+npc.phase)*.026-npc.object.rotation.z)*Math.min(1,dt*.45);
+      if(npc.baconCage)npc.baconCage.rotation.y=Math.sin(t*.00041+npc.phase)*.11;
+    }
+  }
+  for(const npc of cultRoster){
+    if(npc.walking&&npc.userDataWalkUntil&&npc.fate==='present'){
+      const k=(t-(npc.e32ShambleStart||t))*.005;
+      if(npc.e32ShambleOrigin){
+        npc.object.position.x=npc.e32ShambleOrigin.x+Math.sin(k)*.10;
+        npc.object.position.z=npc.e32ShambleOrigin.z+Math.cos(k*.5)*.055;
+        npc.object.rotation.y+=Math.sin(k*.7)*.0008;
+      }
+      if(t>npc.userDataWalkUntil){
+        npc.walking=false;
+        if(npc.e32ShambleOrigin)npc.object.position.set(npc.e32ShambleOrigin.x,npc.object.position.y,npc.e32ShambleOrigin.z);
+        npc.e32ShambleOrigin=null;
+      }
+    }
+  }
+  if(e32Enemy.visible){e32Enemy.rotation.z=Math.sin(t*.0011)*.012;}
+};
+const e32BaseHud=updateHud;
+updateHud=function(dt){e32BaseHud(dt);if(currentZone==='graveyard')$('coords').textContent='45° 02′ N — 10° 41′ E / CIMITERO';e32UpdateQuestHud();};
+const e32BaseFinish=finishListening;
+finishListening=function(){
+  e32BaseFinish();
+  const secret=e32Quest.grave&&e32Quest.pump&&e32Quest.vent&&storyFlags.has('ines-trust')&&storyFlags.has('ottavio-audio')&&storyFlags.has('sergio-truth')&&storyFlags.has('challenged-leader');
+  const button=$('ending-witness');
+  if(button)button.hidden=!secret;
+  if(secret)showToast('C’È UN QUARTO POSTO. NON È PER IL DISCO.');
+};
+const e32BaseEnding=resolveEnding;
+resolveEnding=function(choice){
+  if(choice==='witness'){
+    storyFlags.add('ending-witness');
+    $('ending-title').textContent='La voce che non riempie.';
+    $('ending-copy').textContent='Hai scavato una tomba, fermato una pompa e aperto una condotta. Ines ti ha affidato il nome di Elena; Ottavio ha riconosciuto il rumore che precede il passo; Sergio ha lasciato esistere il referto. Non hai ascoltato Il Bianco. Hai impedito che il vuoto fosse scambiato per una promessa.';
+    $('ending-small').textContent='FINALE IV / TESTIMONIANZA — IL NASTRO RESTA BIANCO';
+    $('ending-choices').classList.remove('visible');$('ending-result').classList.add('visible');
+    speakVoice('Non ci siamo svuotati per essere riempiti. Ci siamo svuotati perché nessuno aveva più ascoltato i nomi.','INES / REGISTRAZIONE');
+    audio?.killSting();glitchPulse=1.2;return;
+  }
+  e32BaseEnding(choice);
+  if(choice==='expose'){
+    if(!(e32Quest.grave&&e32Quest.vent&&storyFlags.has('sergio-truth'))){
+      $('ending-title').textContent='La finestra senza aria.';
+      $('ending-copy').textContent='Hai aperto le finestre, ma non hai trovato il referto né liberato la condotta. La stanza si è riempita d’aria fredda. La spiegazione è rimasta fuori, dietro il vetro.';
+      $('ending-small').textContent='FINALE II / ARIA INSUFFICIENTE';
+    }else{
+      $('ending-title').textContent='La stanza satura.';
+      $('ending-copy').textContent='La tomba di Elena, la confessione di Sergio e la condotta ostruita coincidono. Il coro del 1977 morì per monossido di carbonio. Il disco venne dopo, per dare un nome a ciò che nessuno aveva saputo sopportare.';
+      $('ending-small').textContent='FINALE II / PROVA E VENTILAZIONE';
+    }
+  }
+  if(choice==='fill'&&storyFlags.has('accepted-leader')){
+    $('ending-title').textContent='Il primo nome.';
+    $('ending-copy').textContent='Hai accettato la versione del Primo. Ora sai che non esisteva un capo: esisteva un ordine di persone disposte a cedere il proprio nome. La quattordicesima sedia non è un trono. È un turno.';
+  }
+  if(choice==='preserve'&&storyFlags.has('window-witnessed')){
+    $('ending-title').textContent='La stanza dietro il vetro.';
+    $('ending-copy').textContent='Hai conservato la registrazione. Dietro la finestra, la figura continua ad apparecchiare. Quando il nastro si ferma, sul vetro compare il tuo riflesso seduto al tredicesimo posto.';
+  }
+};
+$('ending-witness').addEventListener('click',()=>resolveEnding('witness'));
+// The shovel is not inventory decoration: it opens a three-stage grave mission.
+{
+  const z=zones.ruin;
+  const tool=new THREE.Group();tool.position.set(-4.65,0,-4.35);z.group.add(tool);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,1.1,8),M.wood);shaft.position.y=.55;shaft.rotation.z=-.14;tool.add(shaft);
+  const blade=new THREE.Mesh(new THREE.BoxGeometry(.22,.36,.045),M.rust);blade.position.set(.08,.1,0);blade.rotation.z=-.16;tool.add(blade);
+  const pickup={id:'e32_spade',type:'event',object:tool,point:tool.position,radius:3.3,prompt:'[ E ] PRENDI LA VANGA',run:()=>{
+    e32Quest.shovel=true;tool.visible=false;z.interactables.splice(z.interactables.indexOf(pickup),1);
+    e32Journal('spade','La vanga','Il manico è stato levigato da una mano che scavava sempre nello stesso punto. Sulla lama: terra nera e una scheggia di vernice bianca.','oggetto');
+    e32Toast('HAI PRESO LA VANGA. IL CIMITERO È OLTRE IL CAMPO DI MAIS.');e32UpdateQuestHud();
+  }};
+  z.interactables.push(pickup);
+}
+// The church organ has lost its crank. It is the only tool that fits the canal pump.
+{
+  const z=zones.church;const crank=new THREE.Group();crank.position.set(-7.2,.25,5.9);z.group.add(crank);
+  const wheel=new THREE.Mesh(new THREE.TorusGeometry(.22,.035,7,24),M.rust);wheel.rotation.x=Math.PI/2;crank.add(wheel);
+  const grip=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.48,7),M.metal);grip.rotation.z=Math.PI/2;crank.add(grip);
+  const pickup={id:'e32_crank',type:'event',object:crank,point:crank.position,radius:3.0,prompt:'[ E ] PRENDI LA MANOVELLA',run:()=>{
+    e32Quest.crank=true;crank.visible=false;z.interactables.splice(z.interactables.indexOf(pickup),1);
+    e32Journal('crank','La manovella','La manovella dell’organo ha la filettatura consumata. Sul mozzo è inciso: CONSORZIO IDRAULICO / 1977.','oggetto');
+    audio?.mechanicalEvent('gear');e32Toast('LA MANOVELLA NON APPARTIENE ALL’ORGANO.');e32UpdateQuestHud();
+  }};
+  z.interactables.push(pickup);
+}
+// The canal pump can be stopped only after the crank is recovered from the church.
+{
+  const z=zones.road;const wheel=new THREE.Group();wheel.position.set(20.7,1.05,10.1);z.group.add(wheel);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.54,.075,8,32),M.rust);wheel.add(ring);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.22,12),M.metal);hub.rotation.x=Math.PI/2;wheel.add(hub);
+  for(let i=0;i<4;i++){const spoke=new THREE.Mesh(new THREE.BoxGeometry(.08,.98,.07),M.rust);spoke.rotation.z=i*Math.PI/4;wheel.add(spoke);}
+  const casing=addBox(z.group,20.7,.65,10.1,1.5,1.25,.75,M.darkWall);
+  const marker=new THREE.Mesh(new THREE.SphereGeometry(.12,9,7),M.gold);marker.position.set(19.2,.2,10.5);z.group.add(marker);
+  z.interactables.push({id:'e32_pump',type:'event',repeatable:true,object:marker,point:marker.position,radius:4.4,prompt:'[ E ] FERMA LA POMPA DEL CANALE',run:()=>{
+    if(!e32Quest.crank){e32Toast('IL PERNO È SPEZZATO. SERVE UNA MANOVELLA.');return;}
+    if(e32Quest.pump){e32Toast('LA POMPA È FERMA. SOTTO IL RUMORE RESTA UN RESPIRO.');return;}
+    e32Quest.pump=true;storyFlags.add('pump-restored');wheel.rotation.z=Math.PI*2;casing.material=M.rust;
+    audio?.powerSurge();audio?.mechanicalEvent('valve');fear=Math.min(1,fear+.11);
+    e32Journal('pump-ledger','Pressione zero','La pompa non spingeva acqua verso i campi. La riportava alla condotta della chiesa. Il contatore segna tredici cicli e un quattordicesimo senza pressione.','registro');
+    speakVoice('La pompa è ferma. Ma il rumore continua nella terra.','IL CANALE');
+    e32Toast('IL CANALE HA SMESSO DI RESPIRARE.');e32UpdateQuestHud();
+  }});
+}
+// A blocked church duct explains how the 1977 choir room became lethal.
+// It can be opened only after both the grave record and pump ledger are recovered.
+{
+  const z=zones.church;const duct=new THREE.Group();duct.position.set(7.1,2.0,-1.2);z.group.add(duct);
+  const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.31,.31,1.5,12),M.rust);pipe.rotation.z=Math.PI/2;duct.add(pipe);
+  const grille=new THREE.Mesh(new THREE.BoxGeometry(.12,.92,.7),M.metal);grille.position.x=-.34;duct.add(grille);
+  for(let i=0;i<5;i++){const bar=new THREE.Mesh(new THREE.BoxGeometry(.15,.035,.62),M.darkWood);bar.position.set(-.42,.3-i*.15,0);duct.add(bar);}
+  const marker=new THREE.Mesh(new THREE.SphereGeometry(.13,9,7),M.gold);marker.position.set(6.4,.35,-.1);z.group.add(marker);
+  z.interactables.push({id:'e32_vent',type:'event',repeatable:true,object:marker,point:marker.position,radius:3.4,prompt:'[ E ] APRI LA CONDOTTA',run:()=>{
+    if(!e32Quest.grave||!e32Quest.pump){e32Toast('MANCA UNA PROVA. LA CONDOTTA NON SI APRE CON LA FORZA.');return;}
+    if(e32Quest.vent){e32Toast('L’ARIA PASSA. L’ODORE NO.');return;}
+    e32Quest.vent=true;storyFlags.add('vent-open');duct.rotation.z=.32;grille.rotation.y=.9;
+    audio?.powerSurge();audio?.mechanicalEvent('valve');fear=Math.max(.2,fear-.16);
+    e32Journal('vent-report','Condotta del coro','Il condotto era stato chiuso dall’interno e poi murato. Il deposito nero coincide con la stufa a gas fotografata nel 1977. Il referto di Elena non era un falso.','referto');
+    speakVoice('La stanza non era maledetta. Era chiusa. Qualcuno ha scelto di chiamare il gas una voce.','LA CONDOTTA');
+    e32Toast('LA CONDOTTA È APERTA. IL MITO HA UNA FESSURA.');e32UpdateQuestHud();
+  }});
+}
+e32HomeWindow.event.prompt='[ E ] GUARDA LA STANZA DIETRO LA FINESTRA';
+e32RuinWindow.event.prompt='[ E ] OSSERVA IL RIFLESSO';
+e32UpdateQuestHud();
